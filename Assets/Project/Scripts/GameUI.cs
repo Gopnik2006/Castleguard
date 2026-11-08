@@ -203,16 +203,24 @@ public class GameUI : MonoBehaviour
     }
 
     Button MakeButton(Transform parent, string label, Vector2 aMin, Vector2 aMax, UnityAction onClick, out Text labelText)
-    {
-        var rt = MakeRect("Button " + label, parent, aMin, aMax);
-        var img = rt.gameObject.AddComponent<Image>();
-        img.color = ButtonColor;
-        var btn = rt.gameObject.AddComponent<Button>();
-        btn.targetGraphic = img;
-        btn.onClick.AddListener(onClick);
-        labelText = MakeText(rt, label, 32, V(0f, 0f), V(1f, 1f), TextAnchor.MiddleCenter);
-        return btn;
-    }
+{
+    var rt = MakeRect("Button " + label, parent, aMin, aMax);
+    var img = rt.gameObject.AddComponent<Image>();
+    img.color = ButtonColor;
+    var btn = rt.gameObject.AddComponent<Button>();
+    btn.targetGraphic = img;
+
+    var c = btn.colors;
+    c.normalColor = ButtonColor;
+    c.highlightedColor = new Color(0.4f, 0.65f, 1f);
+    c.pressedColor = new Color(0.1f, 0.2f, 0.4f);
+    c.selectedColor = ButtonColor;
+    btn.colors = c;
+
+    btn.onClick.AddListener(onClick);
+    labelText = MakeText(rt, label, 32, V(0f, 0f), V(1f, 1f), TextAnchor.MiddleCenter);
+    return btn;
+}
 
     Slider MakeSlider(Transform parent, Vector2 aMin, Vector2 aMax, int min, int max, int value, UnityAction<float> onChange)
     {

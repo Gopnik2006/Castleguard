@@ -1,6 +1,6 @@
 using UnityEngine;
 
-/// Katapulta / armata. Strzela po paraboli tak, żeby pocisk doleciał w zamek po 'flightTime' sekundach.
+
 public class EnemyLauncher : MonoBehaviour
 {
     public CastleHealth target;

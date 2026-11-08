@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class DayNightCycle : MonoBehaviour
 {
-    public Light sun;                 // opcjonalne
+    public Light sun;                 
     public Material sky;
     public float dayLength = 120f;
     [Range(0, 1)] public float t = 0.3f;

@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-/// Powieś na obiekcie zamku (zamok). Zamek musi mieć Collidery (na nim lub dzieciach).
+
 public class CastleHealth : MonoBehaviour
 {
     public float maxHealth = 100f;
