@@ -1,18 +1,26 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// Ustawia na terenie tyle katapult/armat, ile wybrano w menu. Powieś na pustym obiekcie "Spawners".
+/// Ustawia na terenie tyle katapult/armat, ile wybrano w menu, tylko po stronie zamku zwróconej do gracza.
+/// Gdy wróg odda swoje strzały, znika i od razu pojawia się nowy w innym miejscu łuku.
+/// Powieś na pustym obiekcie "Spawner".
 public class EnemySpawner : MonoBehaviour
 {
     public CastleHealth castle;
     public GameObject catapultPrefab;   // opcjonalnie: prefab z komponentem EnemyLauncher
     public GameObject cannonPrefab;     // opcjonalnie
 
-    [Header("Rozmieszczenie wokół zamku")]
-    public float minRadius = 80f;
-    public float maxRadius = 130f;
-    public float arcCenterAngle = 0f;   // 0 = kierunek +Z (świat)
-    public float arcWidth = 360f;       // zawęź np. do 120, żeby wrogowie byli tylko z jednej strony
+    [Header("Rozmieszczenie przed zamkiem")]
+    public float minRadius = 120f;
+    public float maxRadius = 250f;
+    public bool facePlayer = true;      // łuk zawsze od strony gracza
+    public Transform facingTarget;      // puste = Main Camera
+    public float arcCenterAngle = 0f;   // używane tylko gdy facePlayer = false (0 = +Z, 90 = +X)
+    public float arcWidth = 90f;
+
+    [Header("Cykl życia wroga")]
+    public int shotsPerEnemy = 5;       // po tylu strzałach wróg znika
+    public float leaveDelay = 1.5f;     // ile sekund po ostatnim strzale znika model
 
     [Header("Wielkość zastępczych modeli (gdy brak prefabów)")]
     public float placeholderScale = 4f;
@@ -23,12 +31,24 @@ public class EnemySpawner : MonoBehaviour
     void Start()
     {
         if (castle == null) castle = FindFirstObjectByType<CastleHealth>();
+        if (facingTarget == null && Camera.main != null) facingTarget = Camera.main.transform;
     }
 
     void Update()
     {
         var gm = GameManager.Instance;
         if (gm == null || castle == null) return;
+
+        // usuń wrogów, którzy skończyli strzelać (model znika po chwili)
+        for (int i = active.Count - 1; i >= 0; i--)
+        {
+            if (active[i] == null) { active.RemoveAt(i); continue; }
+            if (active[i].Finished)
+            {
+                Destroy(active[i].gameObject, leaveDelay);
+                active.RemoveAt(i);
+            }
+        }
 
         int want = gm.State == GameState.Ready ? 0 : GameManager.EnemyCount;
 
@@ -41,12 +61,22 @@ public class EnemySpawner : MonoBehaviour
         }
     }
 
+    float CenterAngle()
+    {
+        if (facePlayer && facingTarget != null)
+        {
+            Vector3 d = facingTarget.position - castle.Center;
+            return Mathf.Atan2(d.x, d.z) * Mathf.Rad2Deg;
+        }
+        return arcCenterAngle;
+    }
+
     void Spawn()
     {
         bool cannon = spawnedTotal % 2 == 1;
         spawnedTotal++;
 
-        float angle = (arcCenterAngle + Random.Range(-arcWidth * 0.5f, arcWidth * 0.5f)) * Mathf.Deg2Rad;
+        float angle = (CenterAngle() + Random.Range(-arcWidth * 0.5f, arcWidth * 0.5f)) * Mathf.Deg2Rad;
         float radius = Random.Range(minRadius, maxRadius);
         Vector3 pos = castle.Center + new Vector3(Mathf.Sin(angle), 0f, Mathf.Cos(angle)) * radius;
 
@@ -59,21 +89,21 @@ public class EnemySpawner : MonoBehaviour
         Quaternion rot = Quaternion.LookRotation(flatDir.normalized);
 
         GameObject prefab = cannon ? cannonPrefab : catapultPrefab;
-        GameObject go;
         EnemyLauncher launcher;
 
         if (prefab != null)
         {
-            go = Instantiate(prefab, pos, rot);
+            var go = Instantiate(prefab, pos, rot);
             launcher = go.GetComponentInChildren<EnemyLauncher>();
             if (launcher == null) launcher = go.AddComponent<EnemyLauncher>();
         }
         else
         {
-            go = BuildPlaceholder(cannon, pos, rot, out launcher);
+            BuildPlaceholder(cannon, pos, rot, out launcher);
         }
 
         launcher.target = castle;
+        launcher.shotsBeforeLeave = shotsPerEnemy;
         active.Add(launcher);
     }
 

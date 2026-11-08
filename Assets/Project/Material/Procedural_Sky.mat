@@ -41,8 +41,8 @@ Material:
     - _Cloud_Coverage: 0.5
     - _Cloud_Scale: 4
     - _Cloud_Speed: 0.02
-    - _DayFactor: 0
-    - _MoonPhase: 0.14529355
+    - _DayFactor: 0.5907314
+    - _MoonPhase: 0.09227019
     - _QueueControl: 0
     - _QueueOffset: 0
     - _Star_skale: 300
@@ -53,7 +53,7 @@ Material:
     - _Day_Top: {r: 0.19999996, g: 0.45, b: 0.9, a: 1}
     - _Night_Bottom: {r: 0.049999982, g: 0.06999998, b: 0.14999998, a: 1}
     - _Night_Top: {r: 0, g: 0, b: 0.03, a: 1}
-    - _SunDir: {r: -0.147973, g: -0.52331066, b: 0.839196, a: 0}
+    - _SunDir: {r: 0.17316814, g: 0.07431484, b: -0.9820846, a: 0}
     - _Top_Collor: {r: 0.6490744, g: 0.9622641, b: 0.9402525, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

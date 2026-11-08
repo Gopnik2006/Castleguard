@@ -1,16 +1,23 @@
 using UnityEngine;
 
-/// Spuszcza meteoryty pod kątem na zamek. Ilość na minutę ustawia się w menu. Powieś na "Spawners".
+/// Spuszcza meteoryty pod kątem na zamek, tylko z kierunku, w którym stoi gracz.
+/// Ilość na minutę ustawia się w menu. Powieś na "Spawner".
 public class MeteorSpawner : MonoBehaviour
 {
     public CastleHealth castle;
     public GameObject meteorPrefab;       // opcjonalnie (ze Rigidbody lub bez)
 
     [Header("Tor lotu")]
-    public float spawnHeight = 180f;      // wysokość startu nad celem
-    public float horizontalDistance = 140f; // odległość w poziomie => kąt spadania = atan(wysokość / odległość)
+    public float spawnHeight = 200f;      // wysokość startu nad celem
+    public float horizontalDistance = 300f; // odległość w poziomie => kąt spadania = atan(wysokość / odległość)
     public float speed = 45f;
     [Range(0f, 1f)] public float impactSpread = 0.6f;
+
+    [Header("Kierunek (przed zamkiem)")]
+    public bool facePlayer = true;
+    public Transform facingTarget;        // puste = Main Camera
+    public float arcCenterAngle = 0f;     // używane tylko gdy facePlayer = false
+    public float arcWidth = 120f;
 
     [Header("Wygląd / obrażenia")]
     public float scale = 6f;
@@ -22,6 +29,7 @@ public class MeteorSpawner : MonoBehaviour
     void Start()
     {
         if (castle == null) castle = FindFirstObjectByType<CastleHealth>();
+        if (facingTarget == null && Camera.main != null) facingTarget = Camera.main.transform;
     }
 
     void Update()
@@ -40,9 +48,19 @@ public class MeteorSpawner : MonoBehaviour
         }
     }
 
+    float CenterAngle()
+    {
+        if (facePlayer && facingTarget != null)
+        {
+            Vector3 d = facingTarget.position - castle.Center;
+            return Mathf.Atan2(d.x, d.z) * Mathf.Rad2Deg;
+        }
+        return arcCenterAngle;
+    }
+
     void Spawn()
     {
-        float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
+        float angle = (CenterAngle() + Random.Range(-arcWidth * 0.5f, arcWidth * 0.5f)) * Mathf.Deg2Rad;
         Vector3 dir = new Vector3(Mathf.Sin(angle), 0f, Mathf.Cos(angle));
 
         Vector3 aim = castle.Center + Random.insideUnitSphere * castle.Radius * impactSpread;

@@ -1,6 +1,7 @@
 using UnityEngine;
 
-
+/// Katapulta / armata. Strzela po paraboli tak, żeby pocisk doleciał w zamek po 'flightTime' sekundach.
+/// Po 'shotsBeforeLeave' strzałach przestaje strzelać i jest oznaczona jako Finished (EnemySpawner ją usuwa i stawia nową).
 public class EnemyLauncher : MonoBehaviour
 {
     public CastleHealth target;
@@ -14,6 +15,12 @@ public class EnemyLauncher : MonoBehaviour
     public float projectileScale = 3f;
     public Color projectileColor = Color.black;
 
+    [Header("Limit strzałów")]
+    public int shotsBeforeLeave = 5;
+
+    public bool Finished { get; private set; }
+
+    int shotsFired;
     float timer;
 
     void Start()
@@ -23,7 +30,7 @@ public class EnemyLauncher : MonoBehaviour
 
     void Update()
     {
-        if (target == null || GameManager.Instance == null || !GameManager.Instance.IsPlaying) return;
+        if (Finished || target == null || GameManager.Instance == null || !GameManager.Instance.IsPlaying) return;
 
         timer -= Time.deltaTime;
         if (timer <= 0f)
@@ -43,5 +50,8 @@ public class EnemyLauncher : MonoBehaviour
 
         var p = Projectile.Spawn(projectilePrefab, start, projectileScale, projectileColor, damage, true);
         p.Launch(velocity);
+
+        shotsFired++;
+        if (shotsFired >= shotsBeforeLeave) Finished = true;
     }
 }
